@@ -1,74 +1,48 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { useRef } from "react"; // import useRef from react
+import { Text, View, TextInput, StyleSheet } from "react-native";
+import { useScannerDebounce } from "@/hooks/useScannerDebounce";
 
 export default function HomeScreen() {
+  const hiddenInputRef = useRef<TextInput>(null); // Reference to the hidden input
+
+  const { debounce } = useScannerDebounce(); // Debounce hook init
+
+  const onBlur = () => hiddenInputRef.current?.focus(); // Set input focussed function
+
+  // feed the debounce function with callback and delay
+  const onChange = debounce((text: string) => {
+    // Handle the scanned barcode here
+    console.log("text:", text);
+
+    hiddenInputRef.current?.clear(); // Clear the input after processing for the next scan
+  }, 300);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text>Scanner page</Text>
+
+      <TextInput
+        ref={hiddenInputRef} // Set reference to the hidden input
+        autoFocus // Automatically makes the TextInput focussed on mount
+        showSoftInputOnFocus={false} // Hide the keyboard
+        onChange={onChange} // Handle a scanned text
+        onBlur={onBlur} // Keep the TextInput focussed
+        style={styles.hiddenInput} // Apply styles to the TextInput
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  hiddenInput: {
+    // Styles for the TextInput
+    opacity: 0,
+    visibility: "hidden",
   },
 });
